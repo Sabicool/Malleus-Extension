@@ -3,12 +3,25 @@
 This is an extension made for chromium based browsers for the Malleus Clinical Medicine Project. Please read more about the project [[https://malleuscm.notion.site/Malleus-Clinical-Medicine-Anki-Project-AU-NZ-97b71e792df64006a2016e1f1c5548b0?pvs=74][here]]. 
 
 * Showcase
-Easily search the Malleus Clinical Medicine deck for flashcards related to the currently open question in your qBank
+Easily search the Malleus Clinical Medicine deck for flashcards related to the currently open webpage.
+
+* Features
+You can now use this together with the following sites:
+- [[malleuscm.notion.site][malleuscm.notion.site]]
+- [[https://emedici.com/app/qbank][emedici]]
+- [[https://tgldcdp.tg.org.au/etgAccess][eTG Complete]]
+  
+* Usage
+*Malleus Clinical Medicine Website*: search for any disease you may want to find cards on using the search icon at the top right of the website (e.g. atrial fibrillation). Open the page and then click the Malleus extension button from your toolbar. A anki browser window should appear with all the relevant cards. Currently only supports pages from the subject tags database (i.e. diseases), so this will not work on the pharmacology page for example.
+
+Review questions as you would in eMedici and simply click the Malleus extension button in your toolbar to bring up a anki browser window with all the relevant cards
 
 [[./resources/showcase.gif]]
 
+Open any page on eTG and the relevant cards and click the Malleus extension button in your toolbar to bring up the relevant anki cards in an anki browser window.
+
 * Installation
-The extension is now on the [[https://chromewebstore.google.com/detail/malleus-qbank-search/ckihgpchidmfkbnodeeccpogbkcfgpmh?hl=en&authuser=0][chrome web store]]. Please download the extention and then also download the [[https://ankiweb.net/shared/info/2055492159][anki-connect extension]].
+The extension is now on the [[https://chromewebstore.google.com/detail/malleus-qbank-search/ckihgpchidmfkbnodeeccpogbkcfgpmh?hl=en&authuser=0][chrome web store]]. Please download the extention *and then also download the [[https://ankiweb.net/shared/info/2055492159][anki-connect extension]]*.
 
 ** Manual Installation
 To download the latest release of the extension please follow the following steps
@@ -20,9 +33,6 @@ To download the latest release of the extension please follow the following step
 
 You will also need the [[https://ankiweb.net/shared/info/2055492159][ankiconnect extension]]. 
 
-* Usage
-When doing questions on eMedici, simply press the Anki tag search extension button in the tool bar (see gif in [[*Showcase][showcase]])
-
 * Directions for the future
 Sharing and publishing
 - [X] Make releases workflow
@@ -30,10 +40,12 @@ Sharing and publishing
 
 Quality of life improvements
 - [X] Extension checks if the Anki server is running; if not suggest to the user to download anki-connect or start anki
+- [ ] Improve eTG integration using tags instead of source searching; can use source searching to fall back onto
+- [ ] Improve notion website integration for other databases
 
 Other integrations
-- [-] Integrate with notion website to show related cards to currently open page in notion
-- [-] eTG; can now open any page on eTG to open the anki browser
+- [X] Notion website
+- [X] eTG
 - [ ] AMH
 - [ ] RCH
 - [ ] ACI
