@@ -52,15 +52,26 @@ function extractAndSearchTag() {
     if (itemNumber) {
       const lowerBound = Math.floor(itemNumber / 1000) * 1000;
       const rangeTag = `${lowerBound}-${lowerBound + 999}`;
-      query = `tag:#Malleus_CM::#Question_Banks::eMedici::${rangeTag}::${itemNumber}`;
+      query = `tag:#Malleus_CM::#Question_Banks::eMedici::${rangeTag}::${itemNumber}*`;
     }
   } else if (url.includes("malleuscm.notion.site")) {
-    // New Notion case for Malleus
-    const tagElement = document.querySelector(
-      "#notion-app > div > div:nth-child(1) > div > div:nth-child(1) > main > div > div > div.whenContentEditable > div > div:nth-child(3) > div > div > div > div > div:nth-child(2) > div:nth-child(2) > div > div > div > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(2) > div > div > div > div > span"
-    );
+    let tagElement;
+
+    if (url.includes("=")) {
+      // If URL contains an '=', use the specific selector path
+      tagElement = document.querySelector(
+        "#notion-app > div > div.notion-overlay-container.notion-default-overlay-container > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div > div > div.whenContentEditable > div > div:nth-child(3) > div > div > div > div > div:nth-child(2) > div:nth-child(2) > div > div > div > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(2) > div > div > div > div > span"
+      );
+    } else {
+      // Otherwise, use the general selector path
+      tagElement = document.querySelector(
+        "#notion-app > div > div:nth-child(1) > div > div:nth-child(1) > main > div > div > div.whenContentEditable > div > div:nth-child(3) > div > div > div > div > div:nth-child(2) > div:nth-child(2) > div > div > div > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(2) > div > div > div > div > span"
+      );
+    }
+
     if (tagElement) {
-      query = `tag:${tagElement.textContent}*`;
+      // Remove spaces and construct query
+      query = `tag:${tagElement.textContent.replace(/\s+/g, '')}*`;
     }
   }
 
