@@ -1,0 +1,47 @@
+#+TITLE: Readme
+
+This is an extension made for chromium based browsers for the Malleus Clinical Medicine Project. Please read more about the project [[https://malleuscm.notion.site/Malleus-Clinical-Medicine-Anki-Project-AU-NZ-97b71e792df64006a2016e1f1c5548b0?pvs=74][here]]. 
+
+* Showcase
+Easily search the Malleus Clinical Medicine deck for flashcards related to the currently open question in your qBank
+
+[[./resources/showcase.gif]]
+
+* Installation
+The extension is now on the [[https://chromewebstore.google.com/detail/malleus-qbank-search/ckihgpchidmfkbnodeeccpogbkcfgpmh?hl=en&authuser=0][chrome web store]]. Please download the extention and then also download the [[https://ankiweb.net/shared/info/2055492159][anki-connect extension]].
+
+** Manual Installation
+To download the latest release of the extension please follow the following steps
+1. Download the latest release [[https://github.com/Sabicool/Malleus-Qbank-Extension/releases/latest/download/malleus-extension.zip][here]] or go to the [[https://github.com/Sabicool/Malleus-Qbank-Extension/releases][releases page]] and download the latest release file (should be the file named "malleus-extension.zip")
+2. Go to [[chrome://extensions/][chrome://extensions/]]
+3. Turn on developer mode at the top right
+4. Drag and drop the malleus-extension.zip file onto the chrome window (should say "drop to install")
+5. Pin the extension to your toolbar
+
+You will also need the [[https://ankiweb.net/shared/info/2055492159][ankiconnect extension]]. 
+
+* Usage
+When doing questions on eMedici, simply press the Anki tag search extension button in the tool bar (see gif in [[*Showcase][showcase]])
+
+* Directions for the future
+Sharing and publishing
+- [X] Make releases workflow
+- [X] Publish on chrome web store
+
+Quality of life improvements
+- [X] Extension checks if the Anki server is running; if not suggest to the user to download anki-connect or start anki
+
+Other integrations
+- [ ] Integrate with notion website to show related cards to currently open page in notion
+
+I want to enable further integration with emedici:
+- [X] Add support for just from share urls (e.g. [[https://emedici.com/app/share/question/2472][https://emedici.com/app/share/question/2472]])
+- [ ] Add support for cases
+- [ ] Add support for OSCE stations
+
+Add support for other qbanks
+- [ ] Passmedicine
+- [ ] Elsevier
+- [ ] Amboss
+- [ ] AMSA Med Ed
+

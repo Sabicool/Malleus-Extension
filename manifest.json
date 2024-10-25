@@ -1,0 +1,26 @@
+{
+    "manifest_version": 3,
+    "name": "Malleus Extension",
+    "version": "1.0.10",
+    "description": "Easily find cards within the Malleus Clinical Medicine Deck that are related to the currently open webpage.",
+    "permissions": [
+        "activeTab",
+        "scripting"
+    ],
+    "action": {
+        "default_icon": {
+            "16": "images/icon16.png",
+            "48": "images/icon48.png",
+            "128": "images/icon128.png"
+        },
+        "default_title": "Search Malleus deck in Anki for related cards to the current webpage"
+    },
+    "icons": {
+        "16": "images/icon16.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
+    },
+    "background": {
+        "service_worker": "background.js"
+    }
+}

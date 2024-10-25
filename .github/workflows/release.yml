@@ -1,0 +1,59 @@
+name: Pack and Release Chrome Extension
+
+on:
+  push:
+    tags:
+      - 'v*'  # This triggers the workflow when you push a tag like v1.0.0
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Ensure contents permission is correct
+      pull-requests: write
+      repository-projects: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install -g crx
+
+      - name: Generate .crx file
+        run: |
+          mkdir -p dist
+          echo "${{ secrets.EXTENSION_PRIVATE_KEY }}" > extension-key.pem
+          crx pack ./ -p extension-key.pem -o dist/extension.crx
+          ls -al dist  # Debugging: List contents of dist directory
+
+      - name: Convert to .zip file
+        run: |
+          mv dist/extension.crx dist/malleus-extension.zip
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}  # Use the PAT instead of GITHUB_TOKEN
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: "Release ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload Chrome Extension to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}  # Use the PAT instead of GITHUB_TOKEN
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/malleus-extension.zip
+          asset_name: malleus-extension.zip
+          asset_content_type: application/x-chrome-extensiono
