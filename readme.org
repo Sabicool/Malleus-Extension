@@ -32,7 +32,12 @@ Quality of life improvements
 - [X] Extension checks if the Anki server is running; if not suggest to the user to download anki-connect or start anki
 
 Other integrations
-- [ ] Integrate with notion website to show related cards to currently open page in notion
+- [-] Integrate with notion website to show related cards to currently open page in notion
+- [-] eTG; can now open any page on eTG to open the anki browser
+- [ ] AMH
+- [ ] RCH
+- [ ] ACI
+- [ ] Other sites; just search the source field with the URL
 
 I want to enable further integration with emedici:
 - [X] Add support for just from share urls (e.g. [[https://emedici.com/app/share/question/2472][https://emedici.com/app/share/question/2472]])
