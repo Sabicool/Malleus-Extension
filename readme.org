@@ -20,6 +20,7 @@ Review questions as you would in eMedici and simply click the Malleus extension 
 
 Open any page on eTG and the relevant cards and click the Malleus extension button in your toolbar to bring up the relevant anki cards in an anki browser window.
 
+Note that you can also use the right click context menu if you prefer. Please note that extensions which edit the html or look of the page (e.g. the Amboss extension) may interferer with the use of this extension.
 * Installation
 The extension is now on the [[https://chromewebstore.google.com/detail/malleus-qbank-search/ckihgpchidmfkbnodeeccpogbkcfgpmh?hl=en&authuser=0][chrome web store]]. Please download the extention *and then also download the [[https://ankiweb.net/shared/info/2055492159][anki-connect extension]]*.
 
@@ -40,7 +41,8 @@ Sharing and publishing
 
 Quality of life improvements
 - [X] Extension checks if the Anki server is running; if not suggest to the user to download anki-connect or start anki
-- [ ] Improve eTG integration using tags instead of source searching; can use source searching to fall back onto
+- [X] Improve eTG integration using tags instead of source searching; can use source searching to fall back onto
+- [ ] Add right click context menu
 - [ ] Improve notion website integration for other databases
 
 Other integrations

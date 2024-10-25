@@ -13,6 +13,33 @@ chrome.action.onClicked.addListener((tab) => {
   });
 });
 
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "searchMalleusDeck",
+        title: "Search Malleus Anki deck",
+        contexts: ["page"]
+    });
+});
+
+// Handle clicks on the context menu item
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "searchMalleusDeck") {
+        // Execute the extract and search function in the active tab
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: () => {
+                chrome.runtime.sendMessage({ action: "checkAnkiConnect" }, (response) => {
+                    if (response && response.success) {
+                        chrome.runtime.sendMessage({ action: "extractAndSearchTag" });
+                    } else {
+                        alert("Unable to connect to Anki-Connect. Please ensure Anki is running and Anki-Connect is set up correctly.");
+                    }
+                });
+            }
+        });
+    }
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "checkAnkiConnect") {
     fetch("http://localhost:8765", {
