@@ -89,8 +89,23 @@ function extractAndSearchTag() {
         // New eTG Complete case 
         const params = new URLSearchParams(url.split('?')[1]);
         const topicFile = params.get("topicfile"); // Extract the topicfile
+        const guideline = document.querySelector("body > div:nth-child(13) > div > ul > li > a:nth-child(2)");
+        const topic = document.evaluate(
+            "/html/body/div[5]/div/ul/li/text()[3]",
+            document,
+            null,
+            XPathResult.STRING_TYPE,
+            null
+        ).stringValue;
+        
+        if (guideline && topic) {
+            const guidelineTag = guideline.textContent.trim().replace(/\s+/g, '_');
+            const topicTag = String(topic).trim().replace(/\s+/g, '_');
+            query = `tag:#Malleus_CM::#eTG_Complete::${guidelineTag}::*${topicTag}*`;
+        }
 
-        if (topicFile) {
+        // fallback to using the source field
+        else if (topicFile) {
             if (topicFile.includes('_')) {
                 const parts = topicFile.split('_');
 
