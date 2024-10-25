@@ -44,29 +44,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 function extractAndSearchTag() {
   const url = window.location.href;
-  let itemNumber;
+  let query;
 
-  // Check if the URL matches the first pattern: https://emedici.com/app/share/question/____
-  const matchShareQuestion = url.match(/https:\/\/emedici.com\/app\/share\/question\/(\d+)/);
-  if (matchShareQuestion) {
-    itemNumber = matchShareQuestion[1];
-  } else {
-    // Otherwise, locate the element with the text "Item #____"
-    let tagElement = document.querySelector("div.px-sm.py-xs.color-muted.text-xs");
-    itemNumber = tagElement ? tagElement.textContent.match(/\d+/)[0] : null;
+  if (url.includes("emedici.com/app/share/question/")) {
+    // Existing eMedici case
+    const itemNumber = url.match(/\/question\/(\d+)/)[1];
+    if (itemNumber) {
+      const lowerBound = Math.floor(itemNumber / 1000) * 1000;
+      const rangeTag = `${lowerBound}-${lowerBound + 999}`;
+      query = `tag:#Malleus_CM::#Question_Banks::eMedici::${rangeTag}::${itemNumber}`;
+    }
+  } else if (url.includes("malleuscm.notion.site")) {
+    // New Notion case for Malleus
+    const tagElement = document.querySelector(
+      "#notion-app > div > div:nth-child(1) > div > div:nth-child(1) > main > div > div > div.whenContentEditable > div > div:nth-child(3) > div > div > div > div > div:nth-child(2) > div:nth-child(2) > div > div > div > div:nth-child(1) > div:nth-child(1) > div > div:nth-child(2) > div > div > div > div > span"
+    );
+    if (tagElement) {
+      query = `tag:${tagElement.textContent}*`;
+    }
   }
 
-  if (itemNumber) {
-    // Calculate the range for the itemNumber
-    let lowerBound = Math.floor(itemNumber / 1000) * 1000;
-    let upperBound = lowerBound + 999;
-    let rangeTag = `${lowerBound}-${upperBound}`;
-
-    // Construct the full tag-based query
-    let query = `tag:#Malleus_CM::#Question_Banks::eMedici::${rangeTag}::${itemNumber}`;
-
-    // Send the query to Anki-Connect via background script
-    chrome.runtime.sendMessage({ action: "searchTag", query: query });
+  if (query) {
+    // Send query to Anki
+    chrome.runtime.sendMessage({ action: "searchTag", query });
   }
 }
 
