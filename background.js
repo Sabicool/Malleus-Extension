@@ -112,49 +112,48 @@ function extractAndSearchTag() {
             // Remove spaces and construct query
             query = `tag:${tagElement.textContent.replace(/\s+/g, '')}*`;
         }
-    } else if (url.includes("tgldcdp.tg.org.au")) {
-        // New eTG Complete case 
-        const params = new URLSearchParams(url.split('?')[1]);
-        const topicFile = params.get("topicfile"); // Extract the topicfile
-        const guideline = document.querySelector("body > div:nth-child(13) > div > ul > li > a:nth-child(2)");
-        const topic = document.evaluate(
-            "/html/body/div[5]/div/ul/li/text()[3]",
-            document,
-            null,
-            XPathResult.STRING_TYPE,
-            null
-        ).stringValue;
-        
-        if (guideline && topic) {
-            const guidelineTag = guideline.textContent.trim().replace(/\s+/g, '_');
-            const topicTag = String(topic).trim().replace(/\s+/g, '_');
-            query = `tag:#Malleus_CM::#eTG_Complete::${guidelineTag}::*${topicTag}*`;
-        }
+    } else if (url.includes("tgldcdp.tg.org.au") || url.includes("tgldcdp-tg-org-au") || url.includes("eTGAccess=true")) {
+        // New eTG Complete case
+        try {
+            const urlObject = new URL(url);
+            const params = new URLSearchParams(urlObject.search);
+            const topicFile = params.get("topicfile"); // Extract the topicfile
 
-        // fallback to using the source field
-        else if (topicFile) {
-            if (topicFile.includes('_')) {
-                const parts = topicFile.split('_');
-
-                // Handle cases with specific topicfile formats
-                if (topicFile.startsWith("c_")) {
-                    if (parts.length >= 3) {
-                        // For cases like `c_DMG_Acne_topic_1`
-                        // https://tgldcdp.tg.org.au/viewTopic?etgAccess=true&guidelinePage=Cardiovascular&topicfile=c_CVG_Hypertension-and-blood-pressure-reductiontopic_1&guidelinename=auto&sectionId=c_CVG_Hypertension-and-blood-pressure-reductiontopic_8#c_CVG_Hypertension-and-blood-pressure-reductiontopic_8
-                        const sectionPart = parts[2].replace(/topic/, '');
-                        query = `tag:#Malleus_CM* Source:*tgldcdp.tg.org.au*${sectionPart}*`;
-                    }
-                } else if (topicFile.includes("topic")) {
-                    // For cases like `c_GIG_Ulcerative-colitis-in-adultstopic_1`
-                    const sectionPart = parts[1].replace(/topic/, ''); // Get "Ulcerative-colitis-in-adults"
-                    if (sectionPart) {
-                        query = `tag:#Malleus_CM* Source:*tgldcdp.tg.org.au*${sectionPart}*`;
-                    }
-                }
-            } else {
-                // Handle cases like `brucellosis` or `acute-epiglottitis`
-                query = `tag:#Malleus_CM* Source:*tgldcdp.tg.org.au*${topicFile}*`;
+            // Use query selectors for the guideline and topic elements
+            const guideline = document.querySelector("body > div:nth-child(13) > div > ul > li > a:nth-child(2)");
+            const topic = document.querySelector("body > div:nth-child(13) > div > ul > li")?.lastChild?.textContent.trim();
+            
+            if (guideline && topic) {
+                // Construct the query using the guideline and topic
+                const guidelineTag = guideline.textContent.trim().replace(/\s+/g, '_');
+                const topicTag = topic.replace(/\s+/g, '_');
+                query = `tag:#Malleus_CM::#eTG_Complete::${guidelineTag}::*${topicTag}*`;
             }
+            // Fallback to using the source field if guideline and topic aren't available
+            else if (topicFile) {
+                if (topicFile.includes('_')) {
+                    const parts = topicFile.split('_');
+
+                    if (topicFile.startsWith("c_")) {
+                        if (parts.length >= 3) {
+                            // For cases like `c_DMG_Acne_topic_1`
+                            const sectionPart = parts[2].replace(/topic/, '');
+                            query = `tag:#Malleus_CM* Source:*tgldcdp.tg.org.au*${sectionPart}*`;
+                        }
+                    } else if (topicFile.includes("topic")) {
+                        // For cases like `c_GIG_Ulcerative-colitis-in-adultstopic_1`
+                        const sectionPart = parts[1].replace(/topic/, '');
+                        if (sectionPart) {
+                            query = `tag:#Malleus_CM* Source:*tgldcdp.tg.org.au*${sectionPart}*`;
+                        }
+                    }
+                } else {
+                    // Handle cases like `brucellosis` or `acute-epiglottitis`
+                    query = `tag:#Malleus_CM* Source:*tgldcdp.tg.org.au*${topicFile}*`;
+                }
+            }
+        } catch (error) {
+            console.error("Error constructing query:", error);
         }
     }
 
