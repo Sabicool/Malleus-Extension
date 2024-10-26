@@ -26,7 +26,7 @@ The extension is now on the [[https://chromewebstore.google.com/detail/malleus-q
 
 ** Manual Installation
 To download the latest release of the extension please follow the following steps
-1. Download the latest release [[https://github.com/Sabicool/Malleus-Qbank-Extension/releases/latest/download/malleus-extension.zip][here]] or go to the [[https://github.com/Sabicool/Malleus-Qbank-Extension/releases][releases page]] and download the latest release file (should be the file named "malleus-extension.zip")
+1. Download the latest release [[https://github.com/Sabicool/Malleus-Extension/releases/latest/download/malleus-extension.zip][here]] or go to the [[https://github.com/Sabicool/Malleus-Extension/releases][releases page]] and download the latest release file (should be the file named "malleus-extension.zip")
 2. Go to [[chrome://extensions/][chrome://extensions/]]
 3. Turn on developer mode at the top right
 4. Drag and drop the malleus-extension.zip file onto the chrome window (should say "drop to install")
