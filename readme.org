@@ -42,16 +42,18 @@ Sharing and publishing
 Quality of life improvements
 - [X] Extension checks if the Anki server is running; if not suggest to the user to download anki-connect or start anki
 - [X] Improve eTG integration using tags instead of source searching; can use source searching to fall back onto
-- [ ] Add right click context menu
+- [X] Add right click context menu
+- [X] Switch over to using notion api
+- [ ] Search through tag fields instead of title for eTG pages
 - [ ] Improve notion website integration for other databases
 
 Other integrations
-- [X] Notion website
+- [ ] Notion website
 - [X] eTG
 - [ ] AMH
 - [ ] RCH
 - [ ] ACI
-- [ ] Other sites; just search the source field with the URL
+- [-] Other sites; just search the source field with the URL or query title against notion database
 
 I want to enable further integration with emedici:
 - [X] Add support for just from share urls (e.g. [[https://emedici.com/app/share/question/2472][https://emedici.com/app/share/question/2472]])
