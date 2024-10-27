@@ -8,8 +8,8 @@ const NOTION_DATABASES = {
 // Notion API token
 const NOTION_TOKEN = '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';
 
-// Notion API Class
-class NotionSubjectAPI {
+// Notion API Class - regular filter by name and grab tag property
+class NotionAPI {
     constructor(databaseId, notionToken) {
         this.databaseId = databaseId;
         this.notionToken = notionToken;
@@ -123,6 +123,8 @@ class NotionEtgAPI {
     }
 }
 
+// Needs to be separate because it will be searching using two variables
+// And filter will be based of tags not title
 async function notionEtgApiQuery(topic) {
     const notionDatabaseId = '22282971487f4f559dce199476709b03';
     const notionToken = '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';
@@ -133,18 +135,8 @@ async function notionEtgApiQuery(topic) {
     return prependedTags.join(' or ');
 }
 
-async function notionSubjectApiQuery(title) {
-    const notionDatabaseId = '2674b67cbdf84a11a057a29cc24c524f';
-    const notionToken = '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';
-    
-    const notion = new NotionEtgAPI(notionDatabaseId, notionToken);
-    const tags = await notion.filterDatabase(title);
-    const prependedTags = tags.map(tag => `tag:${tag}`);
-    return prependedTags.join(' or ');
-}
-
 async function notionApiQuery(title, databaseId) {
-    const notion = new NotionSubjectAPI(databaseId, NOTION_TOKEN);
+    const notion = new NotionAPI(databaseId, NOTION_TOKEN);
     const tags = await notion.filterDatabase(title);
     const prependedTags = tags.map(tag => `tag:${tag}`);
     return prependedTags.join(' or ');
@@ -192,28 +184,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             })
             .catch(error => {
                 sendResponse({ success: false });
-            });
-        return true;
-    }
-
-    if (request.action === "makeNotionSubjectQuery") {
-        notionSubjectApiQuery(request.title)
-            .then(tag => {
-                if (request.url) {
-                    tag = appendUrlToQuery(tag, request.url);
-                } 
-                if (request.other) {
-                    tag = `${tag} ${request.other}`;
-                }
-                console.log('Query to send to Anki:', tag); // Debug log
-                return guiBrowseInAnki(tag);
-            })
-            .then(() => {
-                sendResponse({ success: true });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                sendResponse({ success: false, error: error.message });
             });
         return true;
     }
@@ -381,6 +351,23 @@ function injectScript() {
                 title: RCHtitle ,
                 url: url,
                 other: "and tag:#Malleus_CM::#Resources_by_Rotation::Paediatrics"
+            }, (response) => {
+                if (response && response.success) {
+                    console.log('Successfully processed query');
+                } else {
+                    console.error('Error processing query:', response?.error);
+                }
+            });
+        }
+        // AMH Case
+        else if (url.includes("amhonline")) {
+            const title = document.title.split(/[-•|:]/)[0].trim();
+            console.log('AMH:', title);
+            chrome.runtime.sendMessage({
+                action: "makeNotionQuery",
+                title: title ,
+                databases: ['pharmacology'],
+                url: url
             }, (response) => {
                 if (response && response.success) {
                     console.log('Successfully processed query');
