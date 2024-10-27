@@ -1,3 +1,13 @@
+const NOTION_DATABASES = {
+    subjects: '2674b67cbdf84a11a057a29cc24c524f',
+    pharmacology: '9ff96451736d43909d49e3b9d60971f8',
+    etg: '22282971487f4f559dce199476709b03',
+    // Add more database IDs as needed
+};
+
+// Notion API token
+const NOTION_TOKEN = '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';
+
 // Notion API Class
 class NotionSubjectAPI {
     constructor(databaseId, notionToken) {
@@ -133,6 +143,13 @@ async function notionSubjectApiQuery(title) {
     return prependedTags.join(' or ');
 }
 
+async function notionApiQuery(title, databaseId) {
+    const notion = new NotionSubjectAPI(databaseId, NOTION_TOKEN);
+    const tags = await notion.filterDatabase(title);
+    const prependedTags = tags.map(tag => `tag:${tag}`);
+    return prependedTags.join(' or ');
+}
+
 function guiBrowseInAnki(query) {
     return fetch("http://localhost:8765", {
         method: "POST",
@@ -151,6 +168,13 @@ function guiBrowseInAnki(query) {
             "Content-Type": "application/json"
         }
     });
+}
+
+function appendUrlToQuery(tagQuery, url) {
+    if (!tagQuery) {
+        return `source:*${url}*`; // If no tags found, just search by URL
+    }
+    return `${tagQuery} or source:*${url}*`; // Combine tags with URL search
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -175,8 +199,46 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "makeNotionSubjectQuery") {
         notionSubjectApiQuery(request.title)
             .then(tag => {
+                if (request.url) {
+                    tag = appendUrlToQuery(tag, request.url);
+                } 
+                if (request.other) {
+                    tag = `${tag} ${request.other}`;
+                }
                 console.log('Query to send to Anki:', tag); // Debug log
                 return guiBrowseInAnki(tag);
+            })
+            .then(() => {
+                sendResponse({ success: true });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+        return true;
+    }
+    
+    if (request.action === "makeNotionQuery") {
+        const { title, databases = ['subjects'], url } = request; // Default to subjects database
+        
+        // Map over requested databases and get all tags
+        Promise.all(databases.map(db => notionApiQuery(title, NOTION_DATABASES[db])))
+            .then(results => {
+                // Filter out empty results and combine with OR
+                const validResults = results.filter(Boolean);
+                let combinedTags = validResults.map(tags => `${tags}`).join(' or ');
+                
+                 // Add URL if provided
+                if (url) {
+                    combinedTags = appendUrlToQuery(combinedTags, url);
+                }
+
+                if (request.other) {
+                    combinedTags = `(${combinedTags}) ${request.other}`;
+                }
+                
+                console.log('Query to send to Anki:', combinedTags);
+                return guiBrowseInAnki(combinedTags);
             })
             .then(() => {
                 sendResponse({ success: true });
@@ -306,6 +368,27 @@ function injectScript() {
                 });
             }
         }
+        // RCH Case
+        // Can be improved to search the guideline database explicitly
+        // If going to use SubjectQuery, it should also filter to 
+        // pages that have the rotation page set to paediatrics, although
+        // this is somewhat accounted for using the other bit in the request
+        else if (url.includes("www.rch.org.au/clinicalguide/")) {
+            const RCHtitle = document.title.split(":")[1]?.trim();
+            console.log('RCH:', RCHtitle);
+            chrome.runtime.sendMessage({
+                action: "makeNotionQuery",
+                title: RCHtitle ,
+                url: url,
+                other: "and tag:#Malleus_CM::#Resources_by_Rotation::Paediatrics"
+            }, (response) => {
+                if (response && response.success) {
+                    console.log('Successfully processed query');
+                } else {
+                    console.error('Error processing query:', response?.error);
+                }
+            });
+        }
         // Other cases just try use the title
         // Should add a source:{URL}
         // Should add multi database searching (e.g. pharmacology)
@@ -314,8 +397,10 @@ function injectScript() {
             const title = document.title.split(/[-•|:]/)[0].trim();
             console.log('other:', title);
             chrome.runtime.sendMessage({
-                action: "makeNotionSubjectQuery",
-                title: title 
+                action: "makeNotionQuery",
+                title: title ,
+                databases: ['subjects', 'pharmacology'],
+                url: url
             }, (response) => {
                 if (response && response.success) {
                     console.log('Successfully processed query');
