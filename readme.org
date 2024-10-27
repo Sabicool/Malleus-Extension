@@ -74,6 +74,12 @@ Add support for other qbanks
 - [ ] Amboss
 - [ ] AMSA Med Ed
 
+* Troubleshooting
+Some versions may be imcompatible with prior versions. Please remove and reinstall the addon if this happens
+
+On some pages (e.g. eTG) using extensions such as the Amboss extension may interfere with it. Please disable other extensions if you see issues
+
+Does not work for PDFs
 * Footnotes
 
 [fn:1] Generally works for most pages. The =document.title=, just needs to start with the disease and drug. If there are instances where it doesn't work regularly please create a new issue.
