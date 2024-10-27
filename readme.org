@@ -80,6 +80,14 @@ Some versions may be imcompatible with prior versions. Please remove and reinsta
 On some pages (e.g. eTG) using extensions such as the Amboss extension may interfere with it. Please disable other extensions if you see issues
 
 Does not work for PDFs
+
+* Licence
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+
+This license grants you the freedom to use, modify, and distribute this software, provided that any derivative work or distribution is also licensed under the AGPL-3.0. Additionally, if you deploy this software on a network, users interacting with it over that network must also be granted access to the source code.
+
+For more details, please refer to the full license text in the [[./LICENSE][LICENSE]] file or visit [[https://www.gnu.org/licenses/agpl-3.0.en.html][GNU AGPL-3.0 License]].
+
 * Footnotes
 
 [fn:1] Generally works for most pages. The =document.title=, just needs to start with the disease and drug. If there are instances where it doesn't work regularly please create a new issue.
