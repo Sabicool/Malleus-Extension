@@ -5,7 +5,7 @@ const NOTION_DATABASES = {
     // Add more database IDs as needed
 };
 
-// Notion API token
+// Notion API token (public token with read only access)
 const NOTION_TOKEN = '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';
 
 // Notion API Class - regular filter by name and grab tag property
