@@ -20,6 +20,11 @@ You can now use this together with the following sites:
 1. Make sure you have Anki running and have installed the [[https://ankiweb.net/shared/info/2055492159][anki-connect extension]]
 2. On any webpage[fn:1] you find simply click the malleus extension button in your toolbar or right click the page and click "Search Malleus Deck".
 
+You can also search the Malleus deck with any highlighted text
+1. Select any text on a webpage and right-click the selected text
+2. Choose "Search Malleus with Selected Text" from the context menu
+3. The extension will clean up the selected text by removing comon separators and extra whitespace and search the Malleus deck for any cards related to it
+   
 ** Example Use Cases
 On the [[https://malleuscm.notion.site][Malleus website]] search for any disease you may want to find cards on using the search icon at the top right of the website (e.g. atrial fibrillation). Open the page and then click the Malleus extension button from your toolbar. A anki browser window should appear with all the relevant cards. Currently only supports pages from the subject tags database (i.e. diseases) and pharmacology database.
 

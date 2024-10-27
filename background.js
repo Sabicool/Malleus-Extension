@@ -126,19 +126,30 @@ class NotionEtgAPI {
 // Needs to be separate because it will be searching using two variables
 // And filter will be based of tags not title
 async function notionEtgApiQuery(topic) {
-    const notionDatabaseId = '22282971487f4f559dce199476709b03';
-    const notionToken = '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';
-
-    const notion = new NotionEtgAPI(notionDatabaseId, notionToken);
+    const notion = new NotionEtgAPI(NOTION_DATABASES.etg, NOTION_TOKEN);
     const tags = await notion.filterDatabase(topic);
-    const prependedTags = tags.map(tag => `tag:${tag}`);
+    const flattenedList = tags
+          .flat(2)  // Flatten nested arrays
+          .join(' ') // Join everything with spaces
+          .split(' ') // Split into individual words
+          .filter(word => word.trim().length > 0); // Remove empty strings
+    
+    // Add 'tag:' prefix and join with 'or'
+    const prependedTags = flattenedList.map(tag => `tag:${tag.trim()}*`);
     return prependedTags.join(' or ');
 }
 
 async function notionApiQuery(title, databaseId) {
     const notion = new NotionAPI(databaseId, NOTION_TOKEN);
     const tags = await notion.filterDatabase(title);
-    const prependedTags = tags.map(tag => `tag:${tag}`);
+    const flattenedList = tags
+          .flat(2)  // Flatten nested arrays
+          .join(' ') // Join everything with spaces
+          .split(' ') // Split into individual words
+          .filter(word => word.trim().length > 0); // Remove empty strings
+    
+    // Add 'tag:' prefix and join with 'or'
+    const prependedTags = flattenedList.map(tag => `tag:${tag.trim()}*`);
     return prependedTags.join(' or ');
 }
 
@@ -262,22 +273,50 @@ chrome.action.onClicked.addListener((tab) => {
     });
 });
 
-// Context menu creation for right-click
+// Create both context menu items on installation
 chrome.runtime.onInstalled.addListener(() => {
+    // Menu item for page context
     chrome.contextMenus.create({
         id: "ankiNotionSearch",
         title: "Search Malleus Deck",
         contexts: ["page"]
     });
+
+    // Menu item for selection context
+    chrome.contextMenus.create({
+        id: "MalleusHighlightedSearch",
+        title: "Search Malleus with Selected Text",
+        contexts: ["selection"]
+    });
 });
 
-// Context menu click handler
+// Combined context menu click handler
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "ankiNotionSearch") {
         chrome.scripting.executeScript({
             target: { tabId: tab.id },
             function: injectScript
         });
+    }
+    else if (info.menuItemId === "MalleusHighlightedSearch") {
+        const title = info.selectionText
+              .split(/[-•|:,;()[\]{}]/)[0] // Split on common separators
+              .trim()                      // Remove leading/trailing whitespace
+              .replace(/\s+/g, ' ');       // Multiple spaces → Single space
+        const databases = ['subjects', 'pharmacology'];
+        console.log('selected text:', title);
+        Promise.all(databases.map(db => notionApiQuery(title, NOTION_DATABASES[db])))
+            .then(results => {
+                // Filter out empty results and combine with OR
+                const validResults = results.filter(Boolean);
+                let combinedTags = validResults.map(tags => `${tags}`).join(' or ');
+                
+                console.log('Query to send to Anki:', combinedTags);
+                return guiBrowseInAnki(combinedTags);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     }
 });
 
@@ -376,6 +415,10 @@ function injectScript() {
                 }
             });
         }
+        // Notion Case
+        // The idea would be to use the URL to find the page ID
+        // https://malleuscm.notion.site/Endocrinology-d9c128f56c484a57935f0d58f52f347e
+        // The page ID can then be used to query all the databases
         // Other cases just try use the title
         // Should add a source:{URL}
         // Should add multi database searching (e.g. pharmacology)
