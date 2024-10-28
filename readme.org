@@ -58,8 +58,8 @@ Quality of life improvements
 - [X] Improve eTG integration using tags instead of source searching; can use source searching to fall back onto
 - [X] Add right click context menu
 - [X] Switch over to using notion api
-- [ ] Search through tag fields instead of title for eTG pages
-- [ ] Improve notion website integration for other databases
+- [X] Search through tag fields instead of title for eTG pages
+- [-] Improve notion website integration for other databases
 
 Other integrations
 - [-] Notion website

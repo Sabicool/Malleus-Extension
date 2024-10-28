@@ -73,21 +73,44 @@ class NotionEtgAPI {
         this.baseUrl = 'https://api.notion.com/v1';
     }
 
-    async filterDatabase(filterText) {
+    formatFilterText(text) {
+        return text.trim().replace(/\s+/g, '_');
+    }
+
+    async filterDatabaseByTwoTags(filterText1, filterText2) {
         const endpoint = `${this.baseUrl}/databases/${this.databaseId}/query`;
         
+        // Format both input strings
+        const formattedText1 = this.formatFilterText(filterText1);
+        const formattedText2 = this.formatFilterText(filterText2);
+
         const headers = {
             'Authorization': `Bearer ${this.notionToken}`,
             'Notion-Version': '2022-06-28',
             'Content-Type': 'application/json'
         };
 
+        // Updated filter to search for both terms in the Tag property
         const filterPayload = {
             filter: {
-                property: 'Name',
-                title: {
-                    contains: filterText
-                }
+                and: [
+                    {
+                        property: 'Tag',
+                        formula: {
+                            string: {
+                                contains: formattedText1
+                            }
+                        }
+                    },
+                    {
+                        property: 'Tag',
+                        formula: {
+                            string: {
+                                contains: formattedText2
+                            }
+                        }
+                    }
+                ]
             }
         };
 
@@ -125,9 +148,9 @@ class NotionEtgAPI {
 
 // Needs to be separate because it will be searching using two variables
 // And filter will be based of tags not title
-async function notionEtgApiQuery(topic) {
+async function notionEtgApiQuery(topic, guideline) {
     const notion = new NotionEtgAPI(NOTION_DATABASES.etg, NOTION_TOKEN);
-    const tags = await notion.filterDatabase(topic);
+    const tags = await notion.filterDatabaseByTwoTags(topic, guideline);
     const flattenedList = tags
           .flat(2)  // Flatten nested arrays
           .join(' ') // Join everything with spaces
@@ -232,7 +255,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     
     if (request.action === "makeNotionEtgQuery") {
-        notionEtgApiQuery(request.topic)
+        notionEtgApiQuery(request.topic, request.guideline)
             .then(tag => {
                 console.log('Query to send to Anki:', tag); // Debug log
                 return guiBrowseInAnki(tag);
@@ -326,12 +349,20 @@ function injectScript() {
     function extractAndSearchTag() {
         // eTG Case
         if (url.includes("tgldcdp.tg.org.au") || url.includes("tgldcdp-tg-org-au") || url.includes("eTGAccess=true")) {
-            const topic = document.querySelector("body > div:nth-child(13) > div > ul > li")?.lastChild?.textContent.trim();
-            if (topic) {
+            const guidelineElement = document.querySelector("body > div:nth-child(13) > div > ul > li > a:nth-child(2)");
+            const topicElement = document.querySelector("body > div:nth-child(13) > div > ul > li")?.lastChild;
+            
+            // Extract text content from the elements
+            const guideline = guidelineElement?.textContent?.trim() || '';
+            const topic = topicElement?.textContent?.trim() || '';
+
+            if (topic && guideline) {
                 console.log('Found topic:', topic);
+                console.log('Found guideline:', guideline);
                 chrome.runtime.sendMessage({ 
                     action: "makeNotionEtgQuery", 
-                    topic: topic 
+                    topic: topic, 
+                    guideline: guideline
                 }, (response) => {
                     if (response && response.success) {
                         console.log('Successfully processed query');
@@ -339,6 +370,8 @@ function injectScript() {
                         console.error('Error processing query:', response?.error);
                     }
                 });
+            } else {
+                console.error('Could not find topic or guideline text');
             }
         }
         // eMedici case
