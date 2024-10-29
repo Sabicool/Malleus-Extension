@@ -235,8 +235,15 @@ async function notionApiQuery(title, databaseId) {
 async function notionIdQuery(id, databaseId) {
     const notion = new NotionIdAPI(databaseId, NOTION_TOKEN);
     const tags = await notion.getPageTag(id);
+    const flattenedList = tags
+          //.flat(2)  // Flatten nested arrays
+          //.join(' ') // Join everything with spaces
+          .split(' ') // Split into individual words
+          .filter(word => word.trim().length > 0); // Remove empty strings
+    
     // Add 'tag:' prefix and join with 'or'
-    return `tag:${tags}*`;
+    const prependedTags = flattenedList.map(tag => `tag:${tag.trim()}*`);
+    return prependedTags.join(' or ');
 }
 
 function guiBrowseInAnki(query) {
