@@ -62,7 +62,7 @@ Quality of life improvements
 - [-] Improve notion website integration for other databases
 
 Other integrations
-- [-] Notion website
+- [X] Notion website
 - [X] eTG
 - [X] AMH
 - [-] RCH

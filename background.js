@@ -146,6 +146,62 @@ class NotionEtgAPI {
     }
 }
 
+class NotionIdAPI {
+    constructor(databaseId, notionToken) {
+        this.databaseId = databaseId;
+        this.notionToken = notionToken;
+        this.baseUrl = 'https://api.notion.com/v1';
+    }
+
+    formatPageId(pageId) {
+        // Remove any existing hyphens and format the ID
+        const cleanId = pageId.replace(/-/g, '');
+        return [
+            cleanId.slice(0, 8),
+            cleanId.slice(8, 12),
+            cleanId.slice(12, 16),
+            cleanId.slice(16, 20),
+            cleanId.slice(20)
+        ].join('-');
+    }
+
+    async getPageTag(pageId) {
+        const formattedPageId = this.formatPageId(pageId);
+        const endpoint = `${this.baseUrl}/pages/${formattedPageId}`;
+        
+        const headers = {
+            'Authorization': `Bearer ${this.notionToken}`,
+            'Notion-Version': '2022-06-28',
+            'Content-Type': 'application/json'
+        };
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'GET',
+                headers: headers
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const tagProperty = data.properties?.Tag;
+
+            if (tagProperty?.type === 'formula' && 
+                tagProperty.formula?.type === 'string' && 
+                tagProperty.formula.string) {
+                return tagProperty.formula.string;
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Error fetching Notion page:', error);
+            return null;
+        }
+    }
+}
+
 // Needs to be separate because it will be searching using two variables
 // And filter will be based of tags not title
 async function notionEtgApiQuery(topic, guideline) {
@@ -174,6 +230,13 @@ async function notionApiQuery(title, databaseId) {
     // Add 'tag:' prefix and join with 'or'
     const prependedTags = flattenedList.map(tag => `tag:${tag.trim()}*`);
     return prependedTags.join(' or ');
+}
+
+async function notionIdQuery(id, databaseId) {
+    const notion = new NotionIdAPI(databaseId, NOTION_TOKEN);
+    const tags = await notion.getPageTag(id);
+    // Add 'tag:' prefix and join with 'or'
+    return `tag:${tags}*`;
 }
 
 function guiBrowseInAnki(query) {
@@ -269,6 +332,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             });
         return true;
     }
+    
+    if (request.action === "makeNotionIdQuery") {
+        notionIdQuery(request.id)
+            .then(tag => {
+                console.log('Query to send to Anki:', tag); // Debug log
+                return guiBrowseInAnki(tag);
+            })
+            .then(() => {
+                sendResponse({ success: true });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+        return true;
+    }
 
     if (request.action === "makeQuery") {
         const query = request.query;
@@ -342,6 +421,34 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             });
     }
 });
+
+function getNotionId(url) {
+  try {
+    // Create a URL object to parse the URL
+    const urlObj = new URL(url);
+    
+    // Regular expression to match a 32-character hex string
+    const idRegex = /^[a-f0-9]{32}$/i;
+    
+    // First check the 'p' parameter
+    const pValue = urlObj.searchParams.get('p');
+    if (pValue && idRegex.test(pValue)) {
+      return pValue;
+    }
+    
+    // If no valid ID in 'p' parameter, check the path
+    const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    
+    // Look for a 32-character hex ID in the last path segment
+    const pathMatch = lastSegment.match(/[a-f0-9]{32}/i);
+    return pathMatch ? pathMatch[0] : null;
+    
+  } catch (error) {
+    console.error('Error parsing Notion URL:', error);
+    return null;
+  }
+}
 
 // This function will be injected into the page
 function injectScript() {
@@ -451,7 +558,46 @@ function injectScript() {
         // Notion Case
         // The idea would be to use the URL to find the page ID
         // https://malleuscm.notion.site/Endocrinology-d9c128f56c484a57935f0d58f52f347e
+        //https://malleuscm.notion.site/1caec2ba44be41d5a4ed8a4d998c42df?v=28001b9a3cc34588b35c6628ea1a94f1&p=513802503cd7404dadf4f830172f2e54&pm=s
+        //https://malleuscm.notion.site/05-Antidotes-and-antivenoms-513802503cd7404dadf4f830172f2e54
         // The page ID can then be used to query all the databases
+        // Some page IDs do not work but unable to determine why this is the case
+        else if (url.includes("malleuscm.notion.site")) {
+            let id = null;
+            const urlObj = new URL(url);
+            
+            // Regular expression to match a 32-character hex string
+            const idRegex = /^[a-f0-9]{32}$/i;
+            
+            // First check the 'p' parameter
+            const pValue = urlObj.searchParams.get('p');
+            if (pValue && idRegex.test(pValue)) {
+                id = pValue;
+            }
+            // Only check the path if we didn't find a valid ID in the 'p' parameter
+            else {
+                // If no valid ID in 'p' parameter, check the path
+                const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+                const lastSegment = pathSegments[pathSegments.length - 1];
+                
+                // Look for a 32-character hex ID in the last path segment
+                const pathMatch = lastSegment.match(/[a-f0-9]{32}/i);
+                id = pathMatch?.[0] || null;
+            }
+            
+            console.log('Notion page id:', id);
+            chrome.runtime.sendMessage({
+                action: "makeNotionIdQuery",
+                id: id,
+                databases: ['subjects', 'pharmacology']
+            }, (response) => {
+                if (response && response.success) {
+                    console.log('Successfully processed query');
+                } else {
+                    console.error('Error processing query:', response?.error);
+                }
+            });
+        }
         // Other cases just try use the title
         // Should add a source:{URL}
         // Should add multi database searching (e.g. pharmacology)
